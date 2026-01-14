@@ -1,0 +1,27 @@
+# /etc/systemd/system/ffmpeg-mtx@.service
+[Unit]
+Description=FFmpeg (AV) -> MediaMTX (%i)
+After=network-online.target mediamtx.service
+Wants=network-online.target
+Requires=mediamtx.service
+
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=2
+StandardOutput=journal
+StandardError=journal
+
+# Loads /etc/ffmpeg-mtx/<name>.env
+EnvironmentFile=/etc/ffmpeg-mtx/%i.env
+
+# Must publish to rtsp://127.0.0.1:8554/<DST>  (DST = %i)
+ExecStart=/usr/local/bin/ffmpeg-mtx-run.sh /etc/ffmpeg-mtx/%i.env
+
+KillSignal=SIGINT
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
