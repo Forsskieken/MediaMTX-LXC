@@ -1,0 +1,21 @@
+# Doorbird D101 camera
+CAM=poortje
+# Inputs
+SRC_RTSP=rtsp://user:password@ip-adress/mpeg/media.amp
+
+# Output path in MediaMTX (video-only)
+DST_VIDEO=poortje-video
+
+VIDEO_MODE=encode
+VIDEO_FPS=10
+VIDEO_GOP=20
+
+
+# Tuning
+RTSP_TRANSPORT=tcp
+RTSP_TIMEOUT_US=60000000
+
+
+ANALYZE_US=1000000
+PROBESIZE=1000000
+
