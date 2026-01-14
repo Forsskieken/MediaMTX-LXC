@@ -1,0 +1,400 @@
+logLevel: info
+logDestinations: [stdout]
+logStructured: no
+logFile: mediamtx.log
+sysLogPrefix: mediamtx
+readTimeout: 10s
+writeTimeout: 10s
+writeQueueSize: 512
+udpMaxPayloadSize: 1472
+udpReadBufferSize: 0
+runOnConnect:
+runOnConnectRestart: no
+runOnDisconnect:
+
+authMethod: internal
+# Internal authentication.
+# list of users.
+authInternalUsers:
+  # Default unprivileged user.
+  # Username. 'any' means any user, including anonymous ones.
+- user: any
+  # Password. Not used in case of 'any' user.
+  pass:
+  # IPs or networks allowed to use this user. An empty list means any IP.
+  ips: []
+  # List of permissions.
+  permissions:
+    # Available actions are: publish, read, playback, api, metrics, pprof.
+  - action: publish
+    # Paths can be set to further restrict access to a specific path.
+    # An empty path means any path.
+    # Regular expressions can be used by using a tilde as prefix.
+    path:
+  - action: read
+    path:
+  - action: playback
+    path:
+
+  # Default administrator.
+  # This allows to use API, metrics and PPROF without authentication,
+  # if the IP is localhost.
+- user: any
+  pass:
+  ips: ['127.0.0.1', '::1']
+  permissions:
+  - action: api
+  - action: metrics
+    - action: pprof
+
+# HTTP-based authentication.
+# URL called to perform authentication. Every time a user wants
+# to authenticate, the server calls this URL with the POST method
+# and a body containing:
+# {
+#   "user": "user",
+#   "password": "password",
+#   "token": "token",
+#   "ip": "ip",
+#   "action": "publish|read|playback|api|metrics|pprof",
+#   "path": "path",
+#   "protocol": "rtsp|rtmp|hls|webrtc|srt",
+#   "id": "id",
+#   "query": "query"
+# }
+# If the response code is 20x, authentication is accepted, otherwise
+# it is discarded.
+authHTTPAddress:
+# Actions to exclude from HTTP-based authentication.
+# Format is the same as the one of user permissions.
+authHTTPExclude:
+- action: api
+- action: metrics
+- action: pprof
+
+authJWTJWKS:
+authJWTJWKSFingerprint:
+authJWTClaimKey: mediamtx_permissions
+authJWTExclude: []
+authJWTInHTTPQuery: true
+api: yes
+apiAddress: :9997
+apiEncryption: no
+apiServerKey: server.key
+apiServerCert: server.crt
+apiAllowOrigins: ['http://192.168.40.30:8123']
+apiTrustedProxies: []
+metrics: no
+metricsAddress: :9998
+metricsEncryption: no
+metricsServerKey: server.key
+metricsServerCert: server.crt
+metricsAllowOrigins: ['*']
+metricsTrustedProxies: []
+pprof: no
+pprofAddress: :9999
+pprofEncryption: no
+pprofServerKey: server.key
+pprofServerCert: server.crt
+pprofAllowOrigins: ['*']
+pprofTrustedProxies: []
+playback: no
+playbackAddress: :9996
+playbackEncryption: no
+playbackServerKey: server.key
+playbackServerCert: server.crt
+playbackAllowOrigins: ['*']
+playbackTrustedProxies: []
+rtsp: yes
+rtspTransports: [udp, multicast, tcp]
+rtspEncryption: "no"
+rtspAddress: :8554
+rtspsAddress: :8322
+rtpAddress: :8000
+rtcpAddress: :8001
+multicastIPRange: 224.1.0.0/16
+multicastRTPPort: 8002
+multicastRTCPPort: 8003
+srtpAddress: :8004
+srtcpAddress: :8005
+multicastSRTPPort: 8006
+multicastSRTCPPort: 8007
+rtspServerKey: server.key
+rtspServerCert: server.crt
+rtspAuthMethods: [basic]
+rtmp: yes
+rtmpAddress: :1935
+rtmpEncryption: "no"
+rtmpsAddress: :1936
+rtmpServerKey: server.key
+rtmpServerCert: server.crt
+hls: yes
+hlsAddress: :8888
+hlsEncryption: no
+hlsServerKey: server.key
+hlsServerCert: server.crt
+hlsAllowOrigins: ['*']
+hlsTrustedProxies: []
+hlsAlwaysRemux: no
+hlsVariant: lowLatency
+hlsSegmentCount: 7
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
+hlsSegmentMaxSize: 50M
+hlsDirectory: ''
+hlsMuxerCloseAfter: 60s
+webrtc: yes
+webrtcAddress: :8889
+webrtcEncryption: no
+webrtcServerKey: server.key
+webrtcServerCert: server.crt
+webrtcAllowOrigins: ['*']
+webrtcTrustedProxies: []
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+webrtcIPsFromInterfaces: yes
+webrtcIPsFromInterfacesList: []
+webrtcAdditionalHosts: []
+webrtcICEServers2: []
+webrtcHandshakeTimeout: 10s
+webrtcTrackGatherTimeout: 2s
+webrtcSTUNGatherTimeout: 5s
+srt: yes
+srtAddress: :8890
+pathDefaults:
+  source: publisher
+  sourceFingerprint:
+  sourceOnDemand: no
+  sourceOnDemandStartTimeout: 10s
+  sourceOnDemandCloseAfter: 10s
+  maxReaders: 0
+  # SRT encryption passphrase required to read from this path.
+  srtReadPassphrase:
+  # If the stream is not available, redirect readers to this path.
+  # It can be can be a relative path (i.e. /otherstream) or an absolute RTSP URL.
+  fallback:
+  # Use absolute timestamp of frames, instead of replacing them with the current time.
+  useAbsoluteTimestamp: false
+
+  ###############################################
+  # Default path settings -> Record
+
+  # Record streams to disk.
+  record: no
+  # Path of recording segments.
+  # Extension is added automatically.
+  # Available variables are %path (path name), %Y %m %d (year, month, day),
+  # %H %M %S (hours, minutes, seconds), %f (microseconds), %z (time zone), %s (unix epoch).
+  recordPath: ./recordings/%path/%Y-%m-%d_%H-%M-%S-%f
+  # Format of recorded segments.
+  # Available formats are "fmp4" (fragmented MP4) and "mpegts" (MPEG-TS).
+  recordFormat: fmp4
+  # fMP4 segments are concatenation of small MP4 files (parts), each with this duration.
+  # MPEG-TS segments are concatenation of 188-bytes packets, flushed to disk with this period.
+  # When a system failure occurs, the last part gets lost.
+  # Therefore, the part duration is equal to the RPO (recovery point objective).
+  recordPartDuration: 1s
+  # This prevents RAM exhaustion.
+  recordMaxPartSize: 50M
+  # Minimum duration of each segment.
+  recordSegmentDuration: 1h
+  # Delete segments after this timespan.
+   # Set to 0s to disable automatic deletion.
+  recordDeleteAfter: 1d
+
+  ###############################################
+  # Default path settings -> Publisher source (when source is "publisher")
+
+  # Allow another client to disconnect the current publisher and publish in its place.
+  overridePublisher: yes
+  # SRT encryption passphrase required to publish to this path.
+  srtPublishPassphrase:
+
+  ###############################################
+  # Default path settings -> RTSP source (when source is a RTSP or a RTSPS URL)
+
+  # Transport protocol used to pull the stream. available values are "automatic", "udp", "multicast", "tcp".
+  rtspTransport: automatic
+  # Support sources that don't provide server ports or use random server ports. This is a security issue
+  # and must be used only when interacting with sources that require it.
+  rtspAnyPort: no
+  # Range header to send to the source, in order to start streaming from the specified offset.
+  # available values:
+  # * clock: Absolute time
+  # * npt: Normal Play Time
+  # * smpte: SMPTE timestamps relative to the start of the recording
+  rtspRangeType:
+  # Available values:
+  # * clock: UTC ISO 8601 combined date and time string, e.g. 20230812T120000Z
+  # * npt: duration such as "300ms", "1.5m" or "2h45m", valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
+  # * smpte: duration such as "300ms", "1.5m" or "2h45m", valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
+  rtspRangeStart:
+
+  ###############################################
+  # Default path settings -> RTP source (when source is RTP)
+
+  # session description protocol (SDP) of the RTP stream.
+  rtpSDP:
+
+  ###############################################
+  # Default path settings -> Redirect source (when source is "redirect")
+
+  # path which clients will be redirected to.
+  # It can be can be a relative path (i.e. /otherstream) or an absolute RTSP URL.
+  sourceRedirect:
+
+  ###############################################
+  # Default path settings -> Raspberry Pi Camera source (when source is "rpiCamera")
+
+  # ID of the camera.
+  rpiCameraCamID: 0
+  # Whether this is a secondary stream.
+  rpiCameraSecondary: false
+  # Width of frames.
+  rpiCameraWidth: 1920
+  # Height of frames.
+  rpiCameraHeight: 1080
+  # Flip horizontally.
+  rpiCameraHFlip: false
+  # Flip vertically.
+  rpiCameraVFlip: false
+  # Brightness [-1, 1].
+  rpiCameraBrightness: 0
+  # Contrast [0, 16].
+  rpiCameraContrast: 1
+  # Saturation [0, 16].
+  rpiCameraSaturation: 1
+  # Sharpness [0, 16].
+  rpiCameraSharpness: 1
+  # Exposure mode.
+  # values: normal, short, long, custom.
+  rpiCameraExposure: normal
+  # Auto-white-balance mode.
+  # (auto, incandescent, tungsten, fluorescent, indoor, daylight, cloudy or custom).
+  rpiCameraAWB: auto
+  # Auto-white-balance fixed gains. This can be used in place of rpiCameraAWB.
+  # format: [red,blue].
+  rpiCameraAWBGains: [0, 0]
+  # Denoise operating mode (off, cdn_off, cdn_fast, cdn_hq).
+  rpiCameraDenoise: "off"
+  # Fixed shutter speed, in microseconds.
+  rpiCameraShutter: 0
+  # Metering mode of the AEC/AGC algorithm (centre, spot, matrix or custom).
+  rpiCameraMetering: centre
+  # Fixed gain.
+  rpiCameraGain: 0
+  # EV compensation of the image in range [-10, 10].
+  rpiCameraEV: 0
+  # Region of interest, in format x,y,width,height (all normalized between 0 and 1).
+  rpiCameraROI:
+  # Whether to enable HDR on Raspberry Camera 3.
+  rpiCameraHDR: false
+  # Tuning file.
+  rpiCameraTuningFile:
+  # Sensor mode, in format [width]:[height]:[bit-depth]:[packing]
+  # bit-depth and packing are optional.
+  rpiCameraMode:
+  # frames per second.
+  rpiCameraFPS: 30
+  # Autofocus mode (auto, manual or continuous).
+  rpiCameraAfMode: continuous
+  # Autofocus range (normal, macro or full).
+  rpiCameraAfRange: normal
+  # Autofocus speed (normal or fast).
+  rpiCameraAfSpeed: normal
+    # Lens position (for manual autofocus only), will be set to focus to a specific distance
+  # calculated by the following formula: d = 1 / value
+  # Examples: 0 moves the lens to infinity.
+  #           0.5 moves the lens to focus on objects 2m away.
+  #           2 moves the lens to focus on objects 50cm away.
+  rpiCameraLensPosition: 0.0
+  # Autofocus window, in the form x,y,width,height where the coordinates
+  # are given as a proportion of the entire image.
+  rpiCameraAfWindow:
+  # Manual flicker correction period, in microseconds.
+  rpiCameraFlickerPeriod: 0
+  # Enables printing text on each frame.
+  rpiCameraTextOverlayEnable: false
+  # Text that is printed on each frame.
+  # format is the one of the strftime() function.
+  rpiCameraTextOverlay: '%Y-%m-%d %H:%M:%S - MediaMTX'
+  # Codec (auto, hardwareH264, softwareH264 or mjpeg).
+  # When is "auto" and stream is primary, it defaults to hardwareH264 (if available) or softwareH264.
+  # When is "auto" and stream is secondary, it defaults to mjpeg.
+  rpiCameraCodec: auto
+  # Period between IDR frames (when codec is hardwareH264 or softwareH264).
+  rpiCameraIDRPeriod: 60
+  # Bitrate (when codec is hardwareH264 or softwareH264).
+  rpiCameraBitrate: 5000000
+  # Hardware H264 profile (baseline, main or high) (when codec is hardwareH264).
+  rpiCameraHardwareH264Profile: main
+  # Hardware H264 level (4.0, 4.1 or 4.2) (when codec is hardwareH264).
+  rpiCameraHardwareH264Level: '4.1'
+  # Software H264 profile (baseline, main or high) (when codec is softwareH264).
+  rpiCameraSoftwareH264Profile: baseline
+  # Software H264 level (4.0, 4.1 or 4.2) (when codec is softwareH264).
+  rpiCameraSoftwareH264Level: '4.1'
+  # M-JPEG JPEG quality (when codec is mjpeg).
+  rpiCameraMJPEGQuality: 60
+
+  ###############################################
+  # Default path settings -> Hooks
+
+  # Command to run when this path is initialized.
+  # This can be used to publish a stream when the server is launched.
+  # This is terminated with SIGINT when the program closes.
+  # The following environment variables are available:
+  # * MTX_PATH: path name
+  # * RTSP_PORT: RTSP server port
+  # * G1, G2, ...: regular expression groups, if path name is
+  #   a regular expression.
+  runOnInit:
+  # Restart the command if it exits.
+  runOnInitRestart: no
+
+  # Command to run when this path is requested by a reader
+  # and no one is publishing to this path yet.
+  # This can be used to publish a stream on demand.
+  # This is terminated with SIGINT when there are no readers anymore.
+  # The following environment variables are available:
+  # * MTX_PATH: path name
+  # * MTX_QUERY: query parameters (passed by first reader)
+  # * RTSP_PORT: RTSP server port
+  # * G1, G2, ...: regular expression groups, if path name is
+  #   a regular expression.
+  runOnDemand:
+  # Restart the command if it exits.
+  runOnDemandRestart: no
+  # Readers will be put on hold until the runOnDemand command starts publishing
+  # or until this amount of time has passed.
+  runOnDemandStartTimeout: 10s
+  # The command will be closed when there are no
+  # readers connected and this amount of time has passed.
+  runOnDemandCloseAfter: 10s
+  # Command to run when there are no readers anymore.
+  # Environment variables are the same of runOnDemand.
+  runOnUnDemand:
+  runOnReady:
+  runOnReadyRestart: no
+  runOnNotReady:
+  runOnRead:
+  runOnReadRestart: no
+  runOnUnread:
+  runOnRecordSegmentCreate:
+  runOnRecordSegmentComplete:
+paths:
+  ingang-video:
+  poortje-video:
+  wachtkamer-video:
+
+  ingang-audio:
+    runOnDemand: /usr/local/bin/doorbird_ingang_audio.sh
+    runOnDemandRestart: no
+    runOnDemandStartTimeout: 60s
+    runOnDemandCloseAfter: 30s
+
+  poortje-audio:
+    runOnDemand: /usr/local/bin/doorbird_poortje_audio.sh
+    runOnDemandRestart: no
+    runOnDemandStartTimeout: 60s
+    runOnDemandCloseAfter: 30s
