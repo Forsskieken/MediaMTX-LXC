@@ -1,0 +1,18 @@
+[Unit]
+Description=MediaMTX (RTSP/WebRTC/HLS server)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mediamtx
+Group=mediamtx
+ExecStart=/opt/mediamtx/mediamtx /etc/mediamtx/mediamtx.yml
+WorkingDirectory=/opt/mediamtx
+Restart=always
+RestartSec=1
+NoNewPrivileges=true
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
